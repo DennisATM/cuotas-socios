@@ -20,11 +20,13 @@ const crearTablas = async () => {
     );
   `);
   await pool.query(`
-    CREATE TABLE IF NOT EXISTS pagos (
-    id SERIAL PRIMARY KEY,
-    socio_id INT REFERENCES socios(id) ON DELETE CASCADE,
-    monto NUMERIC(10,2) NOT NULL,
-    fecha DATE NOT NULL DEFAULT CURRENT_DATE
+    CREATE TABLE pagos (
+        id SERIAL PRIMARY KEY,
+        socio_id INT REFERENCES socios(id) ON DELETE CASCADE,
+        monto NUMERIC(10,2) NOT NULL,
+        fecha DATE NOT NULL DEFAULT CURRENT_DATE,
+        mes INT NOT NULL CHECK (mes >= 1 AND mes <= 12),
+        anio INT NOT NULL
     );
   `);
 };
@@ -54,14 +56,24 @@ app.post("/socios", async (req, res) => {
   }
 });
 
-
-// Registrar pago
+// Registrar pago mensual
 app.post("/pagos", async (req, res) => {
   try {
-    const { socio_id, monto } = req.body;
+    const { socio_id, monto, mes, anio } = req.body;
+
+    // Validar si ya existe un pago para ese mes/año
+    const existe = await pool.query(
+      "SELECT 1 FROM pagos WHERE socio_id=$1 AND mes=$2 AND anio=$3",
+      [socio_id, mes, anio]
+    );
+
+    if (existe.rows.length > 0) {
+      return res.status(400).json({ error: "Ya existe un pago para este mes y año" });
+    }
+
     const result = await pool.query(
-      "INSERT INTO pagos(socio_id, monto) VALUES($1, $2) RETURNING *",
-      [socio_id, monto]
+      "INSERT INTO pagos(socio_id, monto, mes, anio) VALUES($1,$2,$3,$4) RETURNING *",
+      [socio_id, monto, mes, anio]
     );
     res.json(result.rows[0]);
   } catch (err) {
@@ -109,6 +121,75 @@ app.get("/reportes/socios", async (req, res) => {
   }
 });
 
+// Cuotas pendientes por socio (año actual)
+app.get("/cuotas-pendientes/:socio_id/:anio", async (req, res) => {
+  const { socio_id, anio } = req.params;
+  const meses = [
+    "Enero","Febrero","Marzo","Abril","Mayo","Junio",
+    "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"
+  ];
+
+  try {
+    // Obtener pagos de ese socio y año
+    const result = await pool.query(
+      "SELECT mes FROM pagos WHERE socio_id=$1 AND anio=$2",
+      [socio_id, anio]
+    );
+
+    const mesesPagados = result.rows.map(r => r.mes);
+
+    // Armar reporte de cada mes con estado
+    const reporte = meses.map((nombre, index) => ({
+      mes: nombre,
+      numeroMes: index + 1,
+      pagado: mesesPagados.includes(index + 1)
+    }));
+
+    res.json(reporte);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Reporte general de cuotas por año
+app.get("/reporte-anual/:anio", async (req, res) => {
+  const { anio } = req.params;
+
+  try {
+    // Traer todos los socios
+    const socios = await pool.query("SELECT id, nombre FROM socios");
+
+    // Traer todos los pagos del año
+    const pagos = await pool.query(
+      "SELECT socio_id, mes FROM pagos WHERE anio = $1",
+      [anio]
+    );
+
+    const pagosPorSocio = {};
+    pagos.rows.forEach(p => {
+      if (!pagosPorSocio[p.socio_id]) pagosPorSocio[p.socio_id] = new Set();
+      pagosPorSocio[p.socio_id].add(p.mes);
+    });
+
+    // Armar reporte
+    const reporte = socios.rows.map(socio => {
+      const mesesPagados = pagosPorSocio[socio.id]?.size || 0;
+      const mesesPendientes = 12 - mesesPagados;
+
+      return {
+        id: socio.id,
+        nombre: socio.nombre,
+        pagados: mesesPagados,
+        pendientes: mesesPendientes,
+        estado: mesesPagados === 12 ? "Al día" : "Pendiente"
+      };
+    });
+
+    res.json(reporte);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 // Puerto para Render o local
 const PORT = process.env.PORT || 3000;

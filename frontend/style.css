@@ -3,6 +3,10 @@ body {
   max-width: 800px;
   margin: auto;
   padding: 20px;
+  background-image: url('./images/bgUnion.jpg');
+  background-repeat: no-repeat;
+    background-size: cover;
+    backdrop-filter: blur(10px);
 }
 
 h1, h2 {
@@ -19,7 +23,7 @@ section {
 input, select {
   padding: 8px;
   margin: 5px 0;
-  width: 200px;
+  width: 150px;
 }
 
 button {
@@ -28,24 +32,37 @@ button {
   cursor: pointer;
 }
 
-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 10px;
+#reporteCuotas {
+  margin-top: 20px;
+  display: grid;
+  gap: 10px;
 }
 
-th, td {
+.cuotas-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 5px;
+  text-align: center;
+}
+
+.al-dia {
+  background-color: #a2f3a2;
+}
+
+.pendiente {
+  background-color: #f8caca;
+}
+
+.cuota {
   padding: 6px;
-  border: 1px solid #ccc;
-  text-align: left;
+  border-radius: 4px;
+  font-size: 12px;
 }
 
-ul {
-  list-style: none;
-  padding: 0;
+.pagada {
+  background-color: #a2f3a2;
 }
 
-li {
-  padding: 4px;
-  border-bottom: 1px solid #eee;
+.pendiente {
+  background-color: #f8caca;
 }

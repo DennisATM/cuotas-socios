@@ -4,46 +4,93 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Gestión de Cuotas de Socios</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr" crossorigin="anonymous">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>Gestión de Cuotas de Socios</h1>
+  <h1 class="text-primary bg-light rounded">Gestión de Cuotas de Socios</h1>
 
   <!-- Sección: Agregar socio -->
-  <section>
+  <section class="bg-light">
     <h2>Agregar Socio</h2>
-    <input type="text" id="nombreSocio" placeholder="Nombre del socio">
-    <button id="btnAgregarSocio">Agregar</button>
+    <input type="text" class="form-control" id="nombreSocio" placeholder="Nombre del socio">
+    <button id="btnAgregarSocio" class="btn btn-success">Agregar</button>
   </section>
 
   <!-- Sección: Registrar pago -->
-  <section>
+  <section class="bg-light mt-3">
     <h2>Registrar Pago</h2>
-    <select id="selectSocio"></select>
-    <input type="number" id="montoPago" placeholder="Monto del pago">
-    <button id="btnRegistrarPago">Registrar Pago</button>
+    <div class="row justify-content-between">
+        <div class="col-12 col-md-4">
+            <select class="form-control" id="selectSocio"></select>
+        </div>
+        <div class="col-12 col-md-4">
+            <input type="number" class="form-control" id="montoPago" placeholder="Monto del pago">
+        </div>
+        <div class="col-12 col-md-4">
+            <select class="form-control" id="mesPago">
+                <option value="">Mes</option>
+                <option value="1">Enero</option>
+                <option value="2">Febrero</option>
+                <option value="3">Marzo</option>
+                <option value="4">Abril</option>
+                <option value="5">Mayo</option>
+                <option value="6">Junio</option>
+                <option value="7">Julio</option>
+                <option value="8">Agosto</option>
+                <option value="9">Septiembre</option>
+                <option value="10">Octubre</option>
+                <option value="11">Noviembre</option>
+                <option value="12">Diciembre</option>
+            </select>
+        </div>
+    </div>
+    <button class="btn btn-danger" id="btnRegistrarPago">Registrar Pago</button>
   </section>
 
   <!-- Sección: Reportes -->
-  <section>
-    <h2>Reportes</h2>
-    <p>Total en caja: <strong id="totalCaja">$0</strong></p>
-    <table id="tablaReporte">
+  <section class="bg-light mt-3">
+    <h2 class="text-secondary">Reportes</h2>
+    <p>Total en caja: <strong class="text-danger" id="totalCaja">$0</strong></p>
+    <!-- <table id="tablaReporte" class="table table-striped text-center">
       <thead>
-        <tr>
+        <tr class="text-center bg-success">
           <th>Socio</th>
           <th>Total Pagado</th>
         </tr>
       </thead>
       <tbody></tbody>
-    </table>
+    </table> -->
+    <div id="reporteCuotas"></div>
   </section>
 
   <!-- Sección: Pagos por socio -->
-  <section>
-    <h2>Pagos por Socio</h2>
+  <section class="bg-light mt-3">
+    <h2 class="text-tertiary">Pagos por Socio</h2>
     <ul id="listaPagos"></ul>
   </section>
+
+<!-- Sección: Reporte general anual -->
+<section class="bg-light mt-3">
+  <h2 class="text-success">Reporte General Anual</h2>
+  <input class="form-control" type="number" id="anioReporte" value="2025" style="width:80px">
+  <button class="btn btn-warning" id="btnReporteAnual">Generar Reporte</button>
+
+  <table id="tablaReporteAnual" class="table table-striped text-center mt-3">
+    <thead>
+      <tr>
+        <th>Socio</th>
+        <th>Pagados</th>
+        <th>Pendientes</th>
+        <th>Estado</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</section>
+
+
+
 
   <script src="app.js"></script>
 </body>
