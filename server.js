@@ -20,7 +20,7 @@ const crearTablas = async () => {
     );
   `);
   await pool.query(`
-    CREATE TABLE pagos (
+    CREATE TABLE IF NOT EXISTS pagos (
         id SERIAL PRIMARY KEY,
         socio_id INT REFERENCES socios(id) ON DELETE CASCADE,
         monto NUMERIC(10,2) NOT NULL,
