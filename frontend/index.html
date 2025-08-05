@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Gestión de Cuotas de Socios</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -92,22 +93,34 @@
   </table>
 </section> -->
 
-<section>
-  <h2>Recaudación Mensual por Año</h2>
-  <input type="number" id="anioMensual" value="2025" style="width:80px">
-  <button id="btnReporteMensual">Generar Reporte Mensual</button>
+<section class="bg-light mt-3">
+  <h2 class="text-primary">Recaudación Mensual por Año</h2>
+  <div class="row justify-content-start">
+    <div class="col-4">
+      <input class="form-control" type="number" id="anioMensual" value="2025" style="width:80px">
+    </div>
+    <div class="col-8 col-md-4">
+      <button class="btn btn-warning" id="btnReporteMensual">Generar Reporte Mensual</button>
+    </div>
+  </div>
+  <div class="row justify-content-between">
+    <div class="col-12 col-md-4">
+      <table id="tablaReporteMensual" class="table table-responsive-sm table-striped text-center mt-3" style="font-size: 0.8rem;">
+        <thead>
+          <tr>
+            <th>Mes</th>
+            <th>Total Recaudado</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div class="col-12 col-md-8">
+      <canvas style="font-size: 0.7rem;" id="graficoMensual" style="margin-top:20px; max-height:300px;"></canvas>
+    </div>
+  </div>
 
-  <table id="tablaReporteMensual">
-    <thead>
-      <tr>
-        <th>Mes</th>
-        <th>Total Recaudado</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
 
-  <canvas id="graficoMensual" style="margin-top:20px; max-height:300px;"></canvas>
 </section>
 
 <!-- Cargar Chart.js desde CDN -->
@@ -115,7 +128,7 @@
 
 
 <!-- Modal para agregar pago -->
-<div id="modalAddPay" class="modal" tabindex="-1">
+<div id="modalAddPay" class="modal" tabindex="-4">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
@@ -165,7 +178,7 @@
 </div>
 
 <!-- Modal para listar pagos -->
-<div id="modalListPay" class="modal" tabindex="-1">
+<div id="modalListPay" class="modal" tabindex="-4">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">

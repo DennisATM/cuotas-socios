@@ -86,7 +86,7 @@ app.get("/pagos/:socio_id", async (req, res) => {
   try {
     const { socio_id } = req.params;
     const result = await pool.query(
-      "SELECT * FROM pagos WHERE socio_id=$1 ORDER BY fecha DESC",
+      "SELECT * FROM pagos WHERE socio_id=$1 ORDER BY anio DESC, mes DESC",
       [socio_id]
     );
     res.json(result.rows);

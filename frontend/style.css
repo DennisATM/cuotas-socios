@@ -6,7 +6,7 @@ body {
   background-image: url('./images/bgUnion.jpg');
   background-repeat: no-repeat;
     background-size: cover;
-    backdrop-filter: blur(10px);
+    
 }
 
 h1, h2 {

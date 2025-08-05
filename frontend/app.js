@@ -94,12 +94,18 @@ async function cargarReporteSocios() {
                     <td>${r.nombre}</td>
                     <td>$${Math.round(r.total_pagado)}</td>
                     <td>
+                      <div class="row">
+                      <div class="col-5">
                         <button type="button" id="btnRegistrarPago" class="btn btn-primary" data-bs-toggle="modal" onclick="cargarModal('${r.id}','${r.nombre}')" data-bs-target="#modalAddPay">
-                          Pagar cuota
+                          <i class="bi bi-credit-card-2-back-fill"></i>
                         </button>
+                      </div>
+                      <div class="col-5">
                         <button type="button" id="btnListarPago" class="btn btn-success" data-bs-toggle="modal" onclick="cargarPagosPorSocio('${r.id}','${r.nombre}')" data-bs-target="#modalListPay">
-                          Listar pagos
+                          <i class="bi bi-card-checklist"></i>
                         </button>
+                      </div>
+                      </div>
                     </td>`;
     tbody.appendChild(tr);
   });
