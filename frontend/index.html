@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1 class="text-primary bg-light rounded">Gestión de Cuotas de Socios</h1>
+  <h1 class="text-primary bg-light rounded">Control de pagos de cuota</h1>
 
   <!-- Sección: Agregar socio -->
   <section class="bg-light">
@@ -18,7 +18,7 @@
   </section>
 
   <!-- Sección: Registrar pago -->
-  <section class="bg-light mt-3">
+  <!-- <section class="bg-light mt-3">
     <h2>Registrar Pago</h2>
     <div class="row justify-content-between">
         <div class="col-12 col-md-4">
@@ -48,32 +48,33 @@
             <input type="number" class="form-control" id="anioPago" placeholder="Año del pago" value="2025">
         </div>
     <button class="btn btn-danger" id="btnRegistrarPago">Registrar Pago</button>
-  </section>
+  </section> -->
 
   <!-- Sección: Reportes -->
   <section class="bg-light mt-3">
     <h2 class="text-secondary">Reportes</h2>
     <p>Total en caja: <strong class="text-danger" id="totalCaja">$0</strong></p>
-    <!-- <table id="tablaReporte" class="table table-striped text-center">
+    <table id="tablaReporte" class="table table-striped text-center">
       <thead>
         <tr class="text-center bg-success">
           <th>Socio</th>
           <th>Total Pagado</th>
+          <th>Acciones</th>
         </tr>
       </thead>
       <tbody></tbody>
-    </table> -->
+    </table>
     <div id="reporteCuotas"></div>
   </section>
 
   <!-- Sección: Pagos por socio -->
-  <section class="bg-light mt-3">
+  <!-- <section class="bg-light mt-3">
     <h2 class="text-tertiary">Pagos por Socio</h2>
     <ul id="listaPagos"></ul>
-  </section>
+  </section> -->
 
 <!-- Sección: Reporte general anual -->
-<section class="bg-light mt-3">
+<!-- <section class="bg-light mt-3">
   <h2 class="text-success">Reporte General Anual</h2>
   <input class="form-control" type="number" id="anioReporte" value="2025" style="width:80px">
   <button class="btn btn-warning" id="btnReporteAnual">Generar Reporte</button>
@@ -89,11 +90,125 @@
     </thead>
     <tbody></tbody>
   </table>
+</section> -->
+
+<section>
+  <h2>Recaudación Mensual por Año</h2>
+  <input type="number" id="anioMensual" value="2025" style="width:80px">
+  <button id="btnReporteMensual">Generar Reporte Mensual</button>
+
+  <table id="tablaReporteMensual">
+    <thead>
+      <tr>
+        <th>Mes</th>
+        <th>Total Recaudado</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <canvas id="graficoMensual" style="margin-top:20px; max-height:300px;"></canvas>
 </section>
 
+<!-- Cargar Chart.js desde CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 
+<!-- Modal para agregar pago -->
+<div id="modalAddPay" class="modal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Registrar Pago</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row">
+          
+          
+          <div class="col-6">
+            <input type="hidden" class="form-control" id="idSocioPago">
+            <input type="text" class="form-control" id="nombrePago">
+          </div>
+          <div class="col-6">
+            <input type="number" class="form-control" id="montoPago" placeholder="Monto del pago">
+        </div>
+        <div class="col-6">
+            <select class="form-control" id="mesPago">
+                <option value="">Mes</option>
+                <option value="1">Enero</option>
+                <option value="2">Febrero</option>
+                <option value="3">Marzo</option>
+                <option value="4">Abril</option>
+                <option value="5">Mayo</option>
+                <option value="6">Junio</option>
+                <option value="7">Julio</option>
+                <option value="8">Agosto</option>
+                <option value="9">Septiembre</option>
+                <option value="10">Octubre</option>
+                <option value="11">Noviembre</option>
+                <option value="12">Diciembre</option>
+            </select>
+        </div>
+        <div class="col-6">
+            <input type="number" class="form-control" id="anioPago" value="2025" required>
+        </div>
+        
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button id="btnPagoSocio" type="button" class="btn btn-danger">Pagar</button>
+      </div>
+    </div>
+  </div>
+</div>
 
+<!-- Modal para listar pagos -->
+<div id="modalListPay" class="modal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="tituloListaPagos"></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row">
+          <div
+            class="table-responsive"
+          >
+            <table
+              class="table table-light table-striped table-hover text-center"
+            >
+              <thead>
+                <tr>
+                  <th scope="col">Monto</th>
+                  <th scope="col">Mes Pagado</th>
+                  <th scope="col">Año</th>
+                  <th scope="col">Fecha de Pago</th>
+                </tr>
+              </thead>
+              <tbody id="listaPagos">
+                
+              </tbody>
+            </table>
+          </div>
+<!--           
+          <div class="col-6">
+            <ul id="listaPagos"></ul>
+          </div>  -->
+        
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js" integrity="sha384-ndDqU0Gzau9qJ1lfW4pNLlhNTkCfHzAVBReH9diLvGRem5+R9g2FzA8ZGN954O5Q" crossorigin="anonymous"></script>
   <script src="app.js"></script>
 </body>
 </html>

@@ -151,6 +151,40 @@ app.get("/cuotas-pendientes/:socio_id/:anio", async (req, res) => {
   }
 });
 
+// Reporte de recaudación mensual por año
+app.get("/reporte-mensual/:anio", async (req, res) => {
+  const { anio } = req.params;
+  const meses = [
+    "Enero","Febrero","Marzo","Abril","Mayo","Junio",
+    "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"
+  ];
+
+  try {
+    // Totalizar pagos por mes del año dado
+    const result = await pool.query(`
+      SELECT mes, COALESCE(SUM(monto),0) AS total
+      FROM pagos
+      WHERE anio = $1
+      GROUP BY mes
+      ORDER BY mes;
+    `, [anio]);
+
+    // Pasamos a un formato con los 12 meses
+    const datos = Array.from({ length: 12 }, (_, i) => {
+      const fila = result.rows.find(r => Number(r.mes) === i+1);
+      return {
+        mes: meses[i],
+        total: fila ? Number(fila.total) : 0
+      };
+    });
+
+    res.json(datos);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
 // Reporte general de cuotas por año
 app.get("/reporte-anual/:anio", async (req, res) => {
   const { anio } = req.params;
@@ -186,6 +220,7 @@ app.get("/reporte-anual/:anio", async (req, res) => {
     });
 
     res.json(reporte);
+    
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
