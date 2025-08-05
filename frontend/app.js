@@ -94,21 +94,40 @@ async function cargarReporteSocios() {
                     <td>${r.nombre}</td>
                     <td>$${Math.round(r.total_pagado)}</td>
                     <td>
-                      <div class="row">
-                      <div class="col-5">
-                        <button type="button" id="btnRegistrarPago" class="btn btn-primary" data-bs-toggle="modal" onclick="cargarModal('${r.id}','${r.nombre}')" data-bs-target="#modalAddPay">
+                      <div class="row justify-content-around">
+                      <div class="col-4">
+                        <button type="button" id="btnRegistrarPago" class="btn btn-primary p-1 m-0" data-bs-toggle="modal" onclick="cargarModal('${r.id}','${r.nombre}')" data-bs-target="#modalAddPay">
                           <i class="bi bi-credit-card-2-back-fill"></i>
                         </button>
                       </div>
-                      <div class="col-5">
-                        <button type="button" id="btnListarPago" class="btn btn-success" data-bs-toggle="modal" onclick="cargarPagosPorSocio('${r.id}','${r.nombre}')" data-bs-target="#modalListPay">
+                      <div class="col-4">
+                        <button type="button" id="btnListarPago" class="btn btn-success p-1 m-0" data-bs-toggle="modal" onclick="cargarPagosPorSocio('${r.id}','${r.nombre}')" data-bs-target="#modalListPay">
                           <i class="bi bi-card-checklist"></i>
                         </button>
                       </div>
+                      <div class="col-4">
+                        <button type="button" class="btn btn-danger p-1 m-0" onclick="eliminarSocio('${r.id}')">
+                          <i class="bi bi-trash-fill"></i>
+                      </button>
                       </div>
                     </td>`;
     tbody.appendChild(tr);
   });
+}
+
+// Función para eliminar socio
+const eliminarSocio = async (id) => {
+  if (!confirm("¿Seguro que deseas eliminar este socio y todos sus pagos?")) return;
+
+  const res = await fetch(`${API_URL}/socios/${id}`, { method: "DELETE" });
+  const data = await res.json();
+
+  if (res.ok) {
+    alert(data.mensaje);
+    cargarSocios(); // refrescar lista
+  } else {
+    alert(data.error || "Error al eliminar socio");
+  }
 }
 
 
@@ -138,6 +157,8 @@ let chartMensual = null;
 
 document.getElementById("btnReporteMensual").addEventListener("click", () => {
   const anio = document.getElementById("anioMensual").value;
+  if (!anio) return alert("Ingrese un año válido");
+  document.getElementById("btnExportarPDF").disabled = false;
   cargarReporteMensual(anio);
 });
 
@@ -187,132 +208,38 @@ async function cargarReporteMensual(anio) {
   });
 }
 
-
-// // Cambiar lista de pagos al cambiar socio
-// document.getElementById("selectSocio").addEventListener("change", (e) => {
-//   cargarPagosPorSocio(e.target.value);
-// });
-
-// // Inicial
-// cargarSocios();
-// cargarReporteTotal();
-
-// ---------- SOCIOS ----------
-// async function cargarSocios() {
-//   const res = await fetch(`${API_URL}/socios`);
-//   const socios = await res.json();
-
-//   const select = document.getElementById("selectSocio");
-//   select.innerHTML = "";
-//   socios.forEach(s => {
-//     const option = document.createElement("option");
-//     option.value = s.id;
-//     option.textContent = `${s.id} - ${s.nombre}`;
-//     select.appendChild(option);
-//   });
-
-//   if (socios.length > 0) {
-//     cargarReporteCuotas(socios[0].id);
-//   }
-// }
-
-// document.getElementById("btnAgregarSocio").addEventListener("click", async () => {
-//   const nombre = document.getElementById("nombreSocio").value.trim();
-//   if (!nombre) return alert("Ingrese un nombre");
-
-//   await fetch(`${API_URL}/socios`, {
-//     method: "POST",
-//     headers: { "Content-Type": "application/json" },
-//     body: JSON.stringify({ nombre })
-//   });
-
-//   document.getElementById("nombreSocio").value = "";
-//   cargarSocios();
-// });
-
-// ---------- PAGOS ----------
-// document.getElementById("btnRegistrarPago").addEventListener("click", async () => {
-//   const socio_id = document.getElementById("selectSocio").value;
-//   const monto = document.getElementById("montoPago").value;
-//   const mes = document.getElementById("mesPago").value;
-//   const anio = document.getElementById("anioPago").value;
-
-//   if (!socio_id || !monto || !mes ) {
-//     return alert("Complete todos los campos del pago");
-//   }
-
-//   const res = await fetch(`${API_URL}/pagos`, {
-//     method: "POST",
-//     headers: { "Content-Type": "application/json" },
-//     body: JSON.stringify({ socio_id, monto, mes, anio })
-//   });
-
-//   if (!res.ok) {
-//     const error = await res.json();
-//     alert(error.error);
-//     return;
-//   }
-
-//   document.getElementById("montoPago").value = "";
-//   document.getElementById("mesPago").value = "";
+document.getElementById("btnExportarPDF").addEventListener("click", async () => {
   
-//   cargarReporteCuotas(socio_id, anio);
-// });
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
 
-// Cambiar socio → actualizar reporte
-// document.getElementById("selectSocio").addEventListener("change", e => {
-//   const socio_id = e.target.value;
-//   const anio = document.getElementById("anioPago").value;
-//   cargarReporteCuotas(socio_id, anio);
-// });
+  const anio = document.getElementById("anioMensual").value;
+  doc.setFontSize(10);
+  doc.text(`Reporte mensual de recaudación - ${anio}`, 10, 15);
 
-// ---------- REPORTE DE CUOTAS ----------
-// async function cargarReporteCuotas(socio_id, anio = new Date().getFullYear()) {
-//   const res = await fetch(`${API_URL}/cuotas-pendientes/${socio_id}/${anio}`);
-//   const data = await res.json();
+  document.getElementById("btnExportarPDF").disabled = true;
+  // Capturar tabla
+  const tabla = document.getElementById("tablaReporteMensual");
+  
+  const canvasTabla = await html2canvas(tabla);
+  const imgTabla = canvasTabla.toDataURL("image/png");
 
-//   const contenedor = document.getElementById("reporteCuotas");
-//   contenedor.innerHTML = "";
+  doc.addImage(imgTabla, "PNG", 10, 25, 40, 80); // ancho automático
 
-//   const grid = document.createElement("div");
-//   grid.className = "cuotas-grid";
+  // Capturar gráfico
+  const grafico = document.getElementById("graficoMensual");
+  const canvasGrafico = await html2canvas(grafico);
+  const imgGrafico = canvasGrafico.toDataURL("image/png");
 
-//   data.forEach(cuota => {
-//     const div = document.createElement("div");
-//     div.className = `cuota ${cuota.pagado ? "pagada" : "pendiente"}`;
-//     div.textContent = cuota.mes.substring(0, 3); // Ene, Feb, ...
-//     grid.appendChild(div);
-//   });
+  // doc.addPage();
+  doc.text("Gráfico de recaudación mensual", 90, 15);
+  doc.addImage(imgGrafico, "PNG", 80, 25, 80, 40);
 
-//   contenedor.appendChild(grid);
-// }
+  // Descargar
+  doc.save(`reporte_mensual_${anio}.pdf`);
+  
+});
 
-// ---------- REPORTE GENERAL ANUAL ----------
-// document.getElementById("btnReporteAnual").addEventListener("click", () => {
-//   const anio = document.getElementById("anioReporte").value;
-//   cargarReporteAnual(anio);
-// });
 
-// async function cargarReporteAnual(anio) {
-//   const res = await fetch(`${API_URL}/reporte-anual/${anio}`);
-//   const data = await res.json();
-
-//   const tbody = document.querySelector("#tablaReporteAnual tbody");
-//   tbody.innerHTML = "";
-
-//   data.forEach(r => {
-//     const tr = document.createElement("tr");
-//     tr.innerHTML = `
-//       <td>${r.nombre}</td>
-//       <td>${r.pagados}</td>
-//       <td>${r.pendientes}</td>
-//       <td class="${r.estado === "Al día" ? "al-dia" : "pendiente"}">${r.estado}</td>
-//     `;
-//     tbody.appendChild(tr);
-//   });
-// }
-
-// Inicial
-// cargarSocios();
 cargarReporteTotal();
 cargarReporteSocios();

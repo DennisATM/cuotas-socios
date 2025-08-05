@@ -96,11 +96,14 @@
 <section class="bg-light mt-3">
   <h2 class="text-primary">Recaudación Mensual por Año</h2>
   <div class="row justify-content-start">
-    <div class="col-4">
+    <div class="col-4 col-md-4">
       <input class="form-control" type="number" id="anioMensual" value="2025" style="width:80px">
     </div>
     <div class="col-8 col-md-4">
       <button class="btn btn-warning" id="btnReporteMensual">Generar Reporte Mensual</button>
+    </div>
+    <div class="col-6 col-md-4">
+      <button  id="btnExportarPDF" class="btn btn-danger" disabled id="btnReporteMensual">Ver PDF</button>
     </div>
   </div>
   <div class="row justify-content-between">
@@ -123,9 +126,10 @@
 
 </section>
 
-<!-- Cargar Chart.js desde CDN -->
+<!-- Cargar dependencias .js desde CDN -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
 <!-- Modal para agregar pago -->
 <div id="modalAddPay" class="modal" tabindex="-4">

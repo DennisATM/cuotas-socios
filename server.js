@@ -226,6 +226,23 @@ app.get("/reporte-anual/:anio", async (req, res) => {
   }
 });
 
+// Borrar socio por ID
+app.delete("/socios/:id", async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const result = await pool.query("DELETE FROM socios WHERE id = $1", [id]);
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: "Socio no encontrado" });
+    }
+
+    res.json({ mensaje: "Socio eliminado correctamente" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Puerto para Render o local
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Servidor en puerto ${PORT}`));
