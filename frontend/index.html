@@ -141,16 +141,17 @@
       </div>
       <div class="modal-body">
         <div class="row">
-          
-          
           <div class="col-6">
             <input type="hidden" class="form-control" id="idSocioPago">
+            <label for="">Socio:</label>
             <input type="text" class="form-control" id="nombrePago">
           </div>
           <div class="col-6">
+            <label for="">Monto:</label>
             <input type="number" class="form-control" id="montoPago" placeholder="Monto del pago">
         </div>
         <div class="col-6">
+            <label for="">Mes:</label>
             <select class="form-control" id="mesPago">
                 <option value="">Mes</option>
                 <option value="1">Enero</option>
@@ -168,6 +169,7 @@
             </select>
         </div>
         <div class="col-6">
+            <label for="">Año:</label>
             <input type="number" class="form-control" id="anioPago" value="2025" required>
         </div>
         
@@ -176,6 +178,58 @@
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
         <button id="btnPagoSocio" type="button" class="btn btn-danger">Pagar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal para editar pago -->
+<div id="modalEditPay" class="modal" tabindex="-4">
+  <div class="modal-dialog modal-dialog-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Editar Pago</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row">
+          <div class="col-6">
+            <input type="hidden" class="form-control" id="editIdSocioPago">
+            <label for="">Id Pago:</label>
+            <input type="text" readonly class="form-control" id="editNombrePago">
+          </div>
+          <div class="col-6">
+            <label for="">Monto:</label>
+            <input type="number" class="form-control" id="editMontoPago" placeholder="Monto del pago">
+        </div>
+        <div class="col-6">
+            <label for="">Mes:</label>
+            <select class="form-control" id="editMesPago">
+                <option value="">Mes</option>
+                <option value="1">Enero</option>
+                <option value="2">Febrero</option>
+                <option value="3">Marzo</option>
+                <option value="4">Abril</option>
+                <option value="5">Mayo</option>
+                <option value="6">Junio</option>
+                <option value="7">Julio</option>
+                <option value="8">Agosto</option>
+                <option value="9">Septiembre</option>
+                <option value="10">Octubre</option>
+                <option value="11">Noviembre</option>
+                <option value="12">Diciembre</option>
+            </select>
+        </div>
+        <div class="col-6">
+            <label for="">Año:</label>
+            <input type="number" class="form-control" id="editAnioPago" value="2025" required>
+        </div>
+        
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button id="btnActualizarPagoSocio" type="button" class="btn btn-danger">Actualizar</button>
       </div>
     </div>
   </div>

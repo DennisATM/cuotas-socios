@@ -11,7 +11,7 @@ app.get("/", (req, res) => {
   res.send("API de Cobro de Cuotas con PostgreSQL 🚀");
 });
 
-//Crear tabla socios si no existe (ejecutar una vez al iniciar)
+//Crear tabla socios y pagos si no existe (ejecutar una vez al iniciar)
 const crearTablas = async () => {
   await pool.query(`
     CREATE TABLE IF NOT EXISTS socios (
@@ -30,6 +30,7 @@ const crearTablas = async () => {
     );
   `);
 };
+
 crearTablas();
 
 // Listar socios
@@ -56,6 +57,25 @@ app.post("/socios", async (req, res) => {
   }
 });
 
+
+// Borrar socio por ID
+app.delete("/socios/:id", async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const result = await pool.query("DELETE FROM socios WHERE id = $1", [id]);
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: "Socio no encontrado" });
+    }
+
+    res.json({ mensaje: "Socio eliminado correctamente" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
 // Registrar pago mensual
 app.post("/pagos", async (req, res) => {
   try {
@@ -76,6 +96,69 @@ app.post("/pagos", async (req, res) => {
       [socio_id, monto, mes, anio]
     );
     res.json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Editar pago mensual
+app.put("/pagos/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { socio_id, monto, mes, anio } = req.body;
+
+    // Validar que el pago exista
+    const pagoExistente = await pool.query(
+      "SELECT * FROM pagos WHERE id = $1",
+      [id]
+    );
+    if (pagoExistente.rows.length === 0) {
+      return res.status(404).json({ error: "Pago no encontrado" });
+    }
+
+    // Validar que no haya otro pago igual (mismo socio, mes, año) con distinto id
+    const pagoDuplicado = await pool.query(
+      "SELECT 1 FROM pagos WHERE socio_id = $1 AND mes = $2 AND anio = $3 AND id <> $4",
+      [socio_id, mes, anio, id]
+    );
+    if (pagoDuplicado.rows.length > 0) {
+      return res.status(400).json({ error: "Ya existe un pago para este mes y año" });
+    }
+
+    // Actualizar pago
+    const result = await pool.query(
+      `UPDATE pagos
+       SET socio_id = $1, monto = $2, mes = $3, anio = $4
+       WHERE id = $5
+       RETURNING *`,
+      [socio_id, monto, mes, anio, id]
+    );
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Eliminar pago mensual
+app.delete("/pagos/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Validar que exista el pago
+    const pagoExistente = await pool.query(
+      "SELECT * FROM pagos WHERE id = $1",
+      [id]
+    );
+
+    if (pagoExistente.rows.length === 0) {
+      return res.status(404).json({ error: "Pago no encontrado" });
+    }
+
+    // Eliminar pago
+    await pool.query("DELETE FROM pagos WHERE id = $1", [id]);
+
+    res.json({ mensaje: "Pago eliminado correctamente" });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -221,23 +304,6 @@ app.get("/reporte-anual/:anio", async (req, res) => {
 
     res.json(reporte);
     
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// Borrar socio por ID
-app.delete("/socios/:id", async (req, res) => {
-  const { id } = req.params;
-
-  try {
-    const result = await pool.query("DELETE FROM socios WHERE id = $1", [id]);
-
-    if (result.rowCount === 0) {
-      return res.status(404).json({ error: "Socio no encontrado" });
-    }
-
-    res.json({ mensaje: "Socio eliminado correctamente" });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
