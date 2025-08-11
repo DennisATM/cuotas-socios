@@ -204,6 +204,38 @@ app.get("/reportes/socios", async (req, res) => {
   }
 });
 
+//Reporte anual socio/mes
+app.get("/reporte-pagos/:anio", async (req, res) => {
+  try {
+    const { anio } = req.params;
+    const query = `
+      SELECT 
+          s.nombre AS socio,
+          SUM(CASE WHEN mes = 1 THEN monto ELSE 0 END) AS enero,
+          SUM(CASE WHEN mes = 2 THEN monto ELSE 0 END) AS febrero,
+          SUM(CASE WHEN mes = 3 THEN monto ELSE 0 END) AS marzo,
+          SUM(CASE WHEN mes = 4 THEN monto ELSE 0 END) AS abril,
+          SUM(CASE WHEN mes = 5 THEN monto ELSE 0 END) AS mayo,
+          SUM(CASE WHEN mes = 6 THEN monto ELSE 0 END) AS junio,
+          SUM(CASE WHEN mes = 7 THEN monto ELSE 0 END) AS julio,
+          SUM(CASE WHEN mes = 8 THEN monto ELSE 0 END) AS agosto,
+          SUM(CASE WHEN mes = 9 THEN monto ELSE 0 END) AS septiembre,
+          SUM(CASE WHEN mes = 10 THEN monto ELSE 0 END) AS octubre,
+          SUM(CASE WHEN mes = 11 THEN monto ELSE 0 END) AS noviembre,
+          SUM(CASE WHEN mes = 12 THEN monto ELSE 0 END) AS diciembre,
+          SUM(monto) AS total_socio
+      FROM socios s
+      LEFT JOIN pagos p ON s.id = p.socio_id AND p.anio = ?
+      GROUP BY s.nombre
+      ORDER BY s.nombre;
+    `;
+    const [rows] = await pool.query(query, [anio]);
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Cuotas pendientes por socio (año actual)
 app.get("/cuotas-pendientes/:socio_id/:anio", async (req, res) => {
   const { socio_id, anio } = req.params;
