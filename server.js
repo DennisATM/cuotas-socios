@@ -226,7 +226,7 @@ app.get("/reporte-pagos/:anio", async (req, res) => {
           SUM(monto) AS total_socio
       FROM socios s
       LEFT JOIN pagos p ON s.id = p.socio_id AND p.anio = ?
-      GROUP BY s.nombre
+      GROUP BY s.id, s.nombre
       ORDER BY s.nombre;
     `;
     const [rows] = await pool.query(query, [anio]);

@@ -2,45 +2,47 @@
 const API_URL = "https://cuotas-socios.onrender.com";
 
 document.getElementById('btnRepoAnual').addEventListener("click", async ()=>{
-  fetch(`/reporte-pagos/${anio}`)
+  anio = "2024";
+  fetch(`${API_URL}/reporte-pagos/${anio}`)
   .then(res => res.json())
   .then(data => {
     let totalMes = Array(12).fill(0);
     let totalGeneral = 0;
 
-    let html = `<table border="1">
-      <tr>
-        <th>Socio</th>
-        <th>Enero</th><th>Febrero</th><th>Marzo</th>
-        <th>Abril</th><th>Mayo</th><th>Junio</th>
-        <th>Julio</th><th>Agosto</th><th>Septiembre</th>
-        <th>Octubre</th><th>Noviembre</th><th>Diciembre</th>
-        <th>Total Socio</th>
-      </tr>`;
+    // let html = `<table border="1">
+    //   <tr>
+    //     <th>Socio</th>
+    //     <th>Enero</th><th>Febrero</th><th>Marzo</th>
+    //     <th>Abril</th><th>Mayo</th><th>Junio</th>
+    //     <th>Julio</th><th>Agosto</th><th>Septiembre</th>
+    //     <th>Octubre</th><th>Noviembre</th><th>Diciembre</th>
+    //     <th>Total Socio</th>
+    //   </tr>`;
 
-    data.forEach(row => {
-      html += `<tr>
-        <td>${row.socio}</td>`;
-      for (let i = 0; i < 12; i++) {
-        const mesValue = Object.values(row)[i + 1] || 0;
-        totalMes[i] += mesValue;
-        html += `<td>${mesValue.toFixed(2)}</td>`;
-      }
-      html += `<td>${row.total_socio.toFixed(2)}</td>`;
-      totalGeneral += row.total_socio;
-      html += `</tr>`;
-    });
+      console.log(data)
+    // data.forEach(row => {
+    //   html += `<tr>
+    //     <td>${row.socio}</td>`;
+    //   for (let i = 0; i < 12; i++) {
+    //     const mesValue = Object.values(row)[i + 1] || 0;
+    //     totalMes[i] += mesValue;
+    //     html += `<td>${mesValue}</td>`;
+    //   }
+    //   html += `<td>${row.total_socio}</td>`;
+    //   totalGeneral += row.total_socio;
+    //   html += `</tr>`;
+    // });
 
-    // Fila de totales
-    html += `<tr>
-      <th>Total Mes</th>`;
-    totalMes.forEach(t => {
-      html += `<th>${t.toFixed(2)}</th>`;
-    });
-    html += `<th>${totalGeneral.toFixed(2)}</th>`;
-    html += `</tr></table>`;
+    // // Fila de totales
+    // html += `<tr>
+    //   <th>Total Mes</th>`;
+    // totalMes.forEach(t => {
+    //   html += `<th>${t}</th>`;
+    // });
+    // html += `<th>${totalGeneral}</th>`;
+    // html += `</tr></table>`;
 
-    document.getElementById("reporte").innerHTML = html;
+    // document.getElementById("reporte").innerHTML = html;
   });
 
 })
