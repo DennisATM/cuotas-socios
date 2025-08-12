@@ -208,7 +208,7 @@ app.get("/reportes/socios", async (req, res) => {
 app.get("/reporte-pagos/:anio", async (req, res) => {
   try {
     const { anio } = req.params;
-    const query = `
+    const [rows] = await pool.query(`
       SELECT * 
 FROM (
     SELECT 
@@ -254,8 +254,9 @@ FROM (
 ) AS reporte
 ORDER BY socio;
 
-`;
-    const [rows] = await pool.query(query, [anio]);
+`,[anio]);
+
+    
     res.json(rows);
   } catch (err) {
     res.status(500).json({ error: err.message });
