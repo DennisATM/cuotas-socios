@@ -208,7 +208,7 @@ app.get("/reportes/socios", async (req, res) => {
 app.get("/reporte-pagos/:anio", async (req, res) => {
   try {
     const { anio } = req.params;
-    const query = `
+    const [rows] = await pool.query(`
       SELECT 
           s.nombre AS socio,
           SUM(CASE WHEN mes = 1 THEN monto ELSE 0 END) AS enero,
@@ -228,8 +228,8 @@ app.get("/reporte-pagos/:anio", async (req, res) => {
       LEFT JOIN pagos p ON s.id = p.socio_id AND p.anio = $1
       GROUP BY s.id, s.nombre
       ORDER BY s.nombre;
-    `;
-    const [rows] = await pool.query(query, [anio]);
+    `,[anio]);
+    
     res.json(rows);
   } catch (err) {
     res.status(500).json({ error: err.message });
