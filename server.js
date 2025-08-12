@@ -208,55 +208,28 @@ app.get("/reportes/socios", async (req, res) => {
 app.get("/reporte-pagos/:anio", async (req, res) => {
   try {
     const { anio } = req.params;
-    const [rows] = await pool.query(`
-      SELECT * 
-FROM (
-    SELECT 
-        s.nombre AS socio,
-        SUM(CASE WHEN EXTRACT(MONTH FROM p.fecha) = 1 THEN monto ELSE 0 END) AS enero,
-        SUM(CASE WHEN EXTRACT(MONTH FROM p.fecha) = 2 THEN monto ELSE 0 END) AS febrero,
-        SUM(CASE WHEN EXTRACT(MONTH FROM p.fecha) = 3 THEN monto ELSE 0 END) AS marzo,
-        SUM(CASE WHEN EXTRACT(MONTH FROM p.fecha) = 4 THEN monto ELSE 0 END) AS abril,
-        SUM(CASE WHEN EXTRACT(MONTH FROM p.fecha) = 5 THEN monto ELSE 0 END) AS mayo,
-        SUM(CASE WHEN EXTRACT(MONTH FROM p.fecha) = 6 THEN monto ELSE 0 END) AS junio,
-        SUM(CASE WHEN EXTRACT(MONTH FROM p.fecha) = 7 THEN monto ELSE 0 END) AS julio,
-        SUM(CASE WHEN EXTRACT(MONTH FROM p.fecha) = 8 THEN monto ELSE 0 END) AS agosto,
-        SUM(CASE WHEN EXTRACT(MONTH FROM p.fecha) = 9 THEN monto ELSE 0 END) AS septiembre,
-        SUM(CASE WHEN EXTRACT(MONTH FROM p.fecha) = 10 THEN monto ELSE 0 END) AS octubre,
-        SUM(CASE WHEN EXTRACT(MONTH FROM p.fecha) = 11 THEN monto ELSE 0 END) AS noviembre,
-        SUM(CASE WHEN EXTRACT(MONTH FROM p.fecha) = 12 THEN monto ELSE 0 END) AS diciembre,
-        SUM(monto) AS total_socio
-    FROM socios s
-    LEFT JOIN pagos p 
-        ON s.id = p.socio_id 
-        AND EXTRACT(YEAR FROM p.fecha) = $1
-    GROUP BY s.id, s.nombre
-
-    UNION ALL
-
-    SELECT 
-        'TOTAL GENERAL' AS socio,
-        SUM(CASE WHEN EXTRACT(MONTH FROM p.fecha) = 1 THEN monto ELSE 0 END) AS enero,
-        SUM(CASE WHEN EXTRACT(MONTH FROM p.fecha) = 2 THEN monto ELSE 0 END) AS febrero,
-        SUM(CASE WHEN EXTRACT(MONTH FROM p.fecha) = 3 THEN monto ELSE 0 END) AS marzo,
-        SUM(CASE WHEN EXTRACT(MONTH FROM p.fecha) = 4 THEN monto ELSE 0 END) AS abril,
-        SUM(CASE WHEN EXTRACT(MONTH FROM p.fecha) = 5 THEN monto ELSE 0 END) AS mayo,
-        SUM(CASE WHEN EXTRACT(MONTH FROM p.fecha) = 6 THEN monto ELSE 0 END) AS junio,
-        SUM(CASE WHEN EXTRACT(MONTH FROM p.fecha) = 7 THEN monto ELSE 0 END) AS julio,
-        SUM(CASE WHEN EXTRACT(MONTH FROM p.fecha) = 8 THEN monto ELSE 0 END) AS agosto,
-        SUM(CASE WHEN EXTRACT(MONTH FROM p.fecha) = 9 THEN monto ELSE 0 END) AS septiembre,
-        SUM(CASE WHEN EXTRACT(MONTH FROM p.fecha) = 10 THEN monto ELSE 0 END) AS octubre,
-        SUM(CASE WHEN EXTRACT(MONTH FROM p.fecha) = 11 THEN monto ELSE 0 END) AS noviembre,
-        SUM(CASE WHEN EXTRACT(MONTH FROM p.fecha) = 12 THEN monto ELSE 0 END) AS diciembre,
-        SUM(monto) AS total_socio
-    FROM pagos p
-    WHERE EXTRACT(YEAR FROM p.fecha) = $1
-) AS reporte
-ORDER BY socio;
-
-`,[anio]);
-
-    
+    const query = `
+      SELECT 
+          s.nombre AS socio,
+          SUM(CASE WHEN mes = 1 THEN monto ELSE 0 END) AS enero,
+          SUM(CASE WHEN mes = 2 THEN monto ELSE 0 END) AS febrero,
+          SUM(CASE WHEN mes = 3 THEN monto ELSE 0 END) AS marzo,
+          SUM(CASE WHEN mes = 4 THEN monto ELSE 0 END) AS abril,
+          SUM(CASE WHEN mes = 5 THEN monto ELSE 0 END) AS mayo,
+          SUM(CASE WHEN mes = 6 THEN monto ELSE 0 END) AS junio,
+          SUM(CASE WHEN mes = 7 THEN monto ELSE 0 END) AS julio,
+          SUM(CASE WHEN mes = 8 THEN monto ELSE 0 END) AS agosto,
+          SUM(CASE WHEN mes = 9 THEN monto ELSE 0 END) AS septiembre,
+          SUM(CASE WHEN mes = 10 THEN monto ELSE 0 END) AS octubre,
+          SUM(CASE WHEN mes = 11 THEN monto ELSE 0 END) AS noviembre,
+          SUM(CASE WHEN mes = 12 THEN monto ELSE 0 END) AS diciembre,
+          SUM(monto) AS total_socio
+      FROM socios s
+      LEFT JOIN pagos p ON s.id = p.socio_id AND p.anio = $1
+      GROUP BY s.id, s.nombre
+      ORDER BY s.nombre;
+    `;
+    const [rows] = await pool.query(query, [anio]);
     res.json(rows);
   } catch (err) {
     res.status(500).json({ error: err.message });
