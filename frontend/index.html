@@ -38,17 +38,21 @@
   <section class="bg-light mt-3">
     <h2 class="text-primary">Recaudación Mensual por Año</h2>
     <div class="row justify-content-start">
-      <div class="col-4 col-md-3">
+      <div class="col-2 col-md-1 pt-2">
+        <label class="form-label">Año:</label>  
+      </div>
+      <div class="col-3 mx-0 px-0 col-md-1">
         <input class="form-control" type="number" id="anioMensual" value="2025" style="width:80px">
       </div>
-      <div class="col-8 col-md-3">
-        <button class="btn btn-success" id="btnRepoAnual">Generar Reporte Socio/Año</button>
+      
+      <div class="col-6 col-md-3 pt-1">
+        <button class="btn btn-warning" id="btnReporteMensual">Pago Mensual</button>
       </div>
-      <div class="col-8 col-md-3">
-        <button class="btn btn-warning" id="btnReporteMensual">Generar Reporte Mensual</button>
-      </div>
-      <div class="col-6 col-md-3">
+      <div class="col-6 col-md-3 pt-1">
         <button  id="btnExportarPDF" class="btn btn-danger" disabled id="btnReporteMensual">Ver PDF</button>
+      </div>
+      <div class="col-6 col-md-3 pt-1">
+        <button data-bs-toggle="modal" data-bs-target="#modalListPayYear" class="btn btn-success" id="btnRepoAnual">Pago Anual</button>
       </div>
     </div>
     <div class="row justify-content-between">
@@ -67,167 +71,217 @@
         <canvas style="font-size: 0.7rem;" id="graficoMensual" style="margin-top:20px; max-height:300px;"></canvas>
       </div>
     </div>
-
-
   </section>
 
-  <section>
-    <div class="html">
+  <!-- Cargar dependencias .js desde CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <!-- autoTable -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
-    </div>
-  </section>
-
-<!-- Cargar dependencias .js desde CDN -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-
-<!-- Modal para agregar pago -->
-<div id="modalAddPay" class="modal" tabindex="-4">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Registrar Pago</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <div class="row">
-          <div class="col-6">
-            <input type="hidden" class="form-control" id="idSocioPago">
-            <label for="">Socio:</label>
-            <input type="text" class="form-control" id="nombrePago">
+  <!-- Modal para agregar pago -->
+  <div id="modalAddPay" class="modal" tabindex="-4">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Registrar Pago</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row">
+            <div class="col-6">
+              <input type="hidden" class="form-control" id="idSocioPago">
+              <label for="">Socio:</label>
+              <input type="text" class="form-control" id="nombrePago">
+            </div>
+            <div class="col-6">
+              <label for="">Monto:</label>
+              <input type="number" class="form-control" id="montoPago" placeholder="Monto del pago">
           </div>
           <div class="col-6">
-            <label for="">Monto:</label>
-            <input type="number" class="form-control" id="montoPago" placeholder="Monto del pago">
+              <label for="">Mes:</label>
+              <select class="form-control" id="mesPago">
+                  <option value="">Mes</option>
+                  <option value="1">Enero</option>
+                  <option value="2">Febrero</option>
+                  <option value="3">Marzo</option>
+                  <option value="4">Abril</option>
+                  <option value="5">Mayo</option>
+                  <option value="6">Junio</option>
+                  <option value="7">Julio</option>
+                  <option value="8">Agosto</option>
+                  <option value="9">Septiembre</option>
+                  <option value="10">Octubre</option>
+                  <option value="11">Noviembre</option>
+                  <option value="12">Diciembre</option>
+              </select>
+          </div>
+          <div class="col-6">
+              <label for="">Año:</label>
+              <input type="number" class="form-control" id="anioPago" value="2025" required>
+          </div>
+          
+          </div>
         </div>
-        <div class="col-6">
-            <label for="">Mes:</label>
-            <select class="form-control" id="mesPago">
-                <option value="">Mes</option>
-                <option value="1">Enero</option>
-                <option value="2">Febrero</option>
-                <option value="3">Marzo</option>
-                <option value="4">Abril</option>
-                <option value="5">Mayo</option>
-                <option value="6">Junio</option>
-                <option value="7">Julio</option>
-                <option value="8">Agosto</option>
-                <option value="9">Septiembre</option>
-                <option value="10">Octubre</option>
-                <option value="11">Noviembre</option>
-                <option value="12">Diciembre</option>
-            </select>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button id="btnPagoSocio" type="button" class="btn btn-danger">Pagar</button>
         </div>
-        <div class="col-6">
-            <label for="">Año:</label>
-            <input type="number" class="form-control" id="anioPago" value="2025" required>
-        </div>
-        
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        <button id="btnPagoSocio" type="button" class="btn btn-danger">Pagar</button>
       </div>
     </div>
   </div>
-</div>
 
-<!-- Modal para editar pago -->
-<div id="modalEditPay" class="modal" tabindex="-4">
-  <div class="modal-dialog modal-dialog-xl">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Editar Pago</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <div class="row">
-          <div class="col-6">
-            <input type="hidden" class="form-control" id="editIdSocioPago">
-            <label for="">Id Pago:</label>
-            <input type="text" readonly class="form-control" id="editIdPago">
+  <!-- Modal para editar pago -->
+  <div id="modalEditPay" class="modal" tabindex="-4">
+    <div class="modal-dialog modal-dialog-xl">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Editar Pago</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row">
+            <div class="col-6">
+              <input type="hidden" class="form-control" id="editIdSocioPago">
+              <label for="">Id Pago:</label>
+              <input type="text" readonly class="form-control" id="editIdPago">
+            </div>
+            <div class="col-6">
+              <label for="">Monto:</label>
+              <input type="number" class="form-control" id="editMontoPago" placeholder="Monto del pago">
           </div>
           <div class="col-6">
-            <label for="">Monto:</label>
-            <input type="number" class="form-control" id="editMontoPago" placeholder="Monto del pago">
+              <label for="">Mes:</label>
+              <select class="form-control" id="editMesPago">
+                  <option value="">Mes</option>
+                  <option value="1">Enero</option>
+                  <option value="2">Febrero</option>
+                  <option value="3">Marzo</option>
+                  <option value="4">Abril</option>
+                  <option value="5">Mayo</option>
+                  <option value="6">Junio</option>
+                  <option value="7">Julio</option>
+                  <option value="8">Agosto</option>
+                  <option value="9">Septiembre</option>
+                  <option value="10">Octubre</option>
+                  <option value="11">Noviembre</option>
+                  <option value="12">Diciembre</option>
+              </select>
+          </div>
+          <div class="col-6">
+              <label for="">Año:</label>
+              <input type="number" class="form-control" id="editAnioPago" value="2025" required>
+          </div>
+          
+          </div>
         </div>
-        <div class="col-6">
-            <label for="">Mes:</label>
-            <select class="form-control" id="editMesPago">
-                <option value="">Mes</option>
-                <option value="1">Enero</option>
-                <option value="2">Febrero</option>
-                <option value="3">Marzo</option>
-                <option value="4">Abril</option>
-                <option value="5">Mayo</option>
-                <option value="6">Junio</option>
-                <option value="7">Julio</option>
-                <option value="8">Agosto</option>
-                <option value="9">Septiembre</option>
-                <option value="10">Octubre</option>
-                <option value="11">Noviembre</option>
-                <option value="12">Diciembre</option>
-            </select>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button id="btnActualizarPagoSocio" type="button" class="btn btn-danger">Actualizar</button>
         </div>
-        <div class="col-6">
-            <label for="">Año:</label>
-            <input type="number" class="form-control" id="editAnioPago" value="2025" required>
-        </div>
-        
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        <button id="btnActualizarPagoSocio" type="button" class="btn btn-danger">Actualizar</button>
       </div>
     </div>
   </div>
-</div>
 
-<!-- Modal para listar pagos -->
-<div id="modalListPay" class="modal" tabindex="-4">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="tituloListaPagos"></h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <div class="row">
-          <div
-            class="table-responsive"
-          >
-            <table
-              class="table table-light table-striped table-hover text-center"
+  <!-- Modal para listar pagos -->
+  <div id="modalListPay" class="modal" tabindex="-4">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="tituloListaPagos"></h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row">
+            <div
+              class="table-responsive"
             >
-              <thead>
-                <tr>
-                  <th scope="col">Monto</th>
-                  <th scope="col">Mes Pagado</th>
-                  <th scope="col">Año</th>
-                  <th scope="col">Fecha de Pago</th>
-                </tr>
-              </thead>
-              <tbody id="listaPagos">
-                
-              </tbody>
-            </table>
+              <table
+                class="table table-light table-striped table-hover text-center"
+              >
+                <thead>
+                  <tr>
+                    <th scope="col">Monto</th>
+                    <th scope="col">Mes Pagado</th>
+                    <th scope="col">Año</th>
+                    <th scope="col">Fecha de Pago</th>
+                  </tr>
+                </thead>
+                <tbody id="listaPagos">
+                  
+                </tbody>
+              </table>
+            </div>
+  <!--           
+            <div class="col-6">
+              <ul id="listaPagos"></ul>
+            </div>  -->
+          
           </div>
-<!--           
-          <div class="col-6">
-            <ul id="listaPagos"></ul>
-          </div>  -->
-        
         </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
       </div>
     </div>
   </div>
-</div>
+
+  <!-- Modal para listar pagos por socio/año -->
+  <div id="modalListPayYear" class="modal" tabindex="-4">
+    <div class="modal-dialog modal-xl">
+      <div class="modal-content">
+        <div class="modal-header">
+          <div id="hidden-content">
+            <input type="hidden" class="text" id="dataObject">
+            <input type="hidden" class="text" id="anio">
+            <input type="hidden" class="tex" id="totalMes">
+            <input type="hidden" class="tex" id="totalGeneral">
+          </div>
+          <h6 class="modal-title" id="tituloListaPagosAnual"></h6>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row">
+            <div
+              class="table-responsive" style="font-size: 0.8em;"
+            >
+              <table
+                class="table table-light table-striped table-sm table-hover text-center"
+              >
+                <thead>
+                  <tr>
+                    <th scope="col" class="text-primary bg-light">Socio</th>
+                    <th scope="col">Enero</th>
+                    <th scope="col">Febrero</th>
+                    <th scope="col">Marzo</th>
+                    <th scope="col">Abril</th>
+                    <th scope="col">Mayo</th>
+                    <th scope="col">Junio</th>
+                    <th scope="col">Julio</th>
+                    <th scope="col">Agosto</th>
+                    <th scope="col">Septiembre</th>
+                    <th scope="col">Octubre</th>
+                    <th scope="col">Noviembre</th>
+                    <th scope="col">Diciembre</th>
+                    <th scope="col" class="fw-bold">Total</th>
+                  </tr>
+                </thead>
+                <tbody id="reporte">
+                  
+                </tbody>
+              </table>
+            </div>
+          
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" id="btnPdf" class="btn btn-danger" data-bs-dismiss="modal">Ver PDF</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js" integrity="sha384-ndDqU0Gzau9qJ1lfW4pNLlhNTkCfHzAVBReH9diLvGRem5+R9g2FzA8ZGN954O5Q" crossorigin="anonymous"></script>

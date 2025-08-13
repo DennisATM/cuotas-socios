@@ -2,51 +2,144 @@
 const API_URL = "https://cuotas-socios.onrender.com";
 
 document.getElementById('btnRepoAnual').addEventListener("click", async ()=>{
-  anio = "2024";
+  anio=document.getElementById('anioMensual').value;
+  document.getElementById('tituloListaPagosAnual').innerHTML=`Reporte Anual por socio/mes del año ${anio}`;
+
   fetch(`${API_URL}/reporte-pagos/${anio}`)
-  .then(res => res.json())
-  .then(data => {
-    let totalMes = Array(12).fill(0);
-    let totalGeneral = 0;
+    .then(res => res.json())
+    .then(data => {
+      let totalMes = Array(12).fill(0);
+      let totalGeneral = 0;
+      let html = "";
+    
+      data.forEach(row => {
+        html += `<tr>
+                <td scope="col-2" class="text-primary bg-light">${row.socio}</td>`;
+                  for (let i = 0; i < 12; i++) {
+                    const mesValue = Object.values(row)[i + 1] || 0;
+                    totalMes[i] += Number(mesValue);
 
-    // let html = `<table border="1">
-    //   <tr>
-    //     <th>Socio</th>
-    //     <th>Enero</th><th>Febrero</th><th>Marzo</th>
-    //     <th>Abril</th><th>Mayo</th><th>Junio</th>
-    //     <th>Julio</th><th>Agosto</th><th>Septiembre</th>
-    //     <th>Octubre</th><th>Noviembre</th><th>Diciembre</th>
-    //     <th>Total Socio</th>
-    //   </tr>`;
+                    html += `<td>${Math.round(mesValue)}</td>`;
+                  }
+                  html += `<td class="fw-bold">${Math.round(row.total_socio)}</td>`;
+                  totalGeneral += Number(row.total_socio);
+                  html += `</tr>`;
+                });
 
-      console.log(data)
-    // data.forEach(row => {
-    //   html += `<tr>
-    //     <td>${row.socio}</td>`;
-    //   for (let i = 0; i < 12; i++) {
-    //     const mesValue = Object.values(row)[i + 1] || 0;
-    //     totalMes[i] += mesValue;
-    //     html += `<td>${mesValue}</td>`;
-    //   }
-    //   html += `<td>${row.total_socio}</td>`;
-    //   totalGeneral += row.total_socio;
-    //   html += `</tr>`;
-    // });
+      // Fila de totales
+      html += `
+        <td class="fw-bold text-danger">Total Mes</td>`;
+    
+      totalMes.forEach(t => {
+        html += `<td class="fw-bold text-danger">${t}</td>`;
+      });
+      html += `<td class="fw-bold text-danger">${totalGeneral}</td>`;
 
-    // // Fila de totales
-    // html += `<tr>
-    //   <th>Total Mes</th>`;
-    // totalMes.forEach(t => {
-    //   html += `<th>${t}</th>`;
-    // });
-    // html += `<th>${totalGeneral}</th>`;
-    // html += `</tr></table>`;
+      document.getElementById("reporte").innerHTML = html;
 
-    // document.getElementById("reporte").innerHTML = html;
+      // imprimirPdf(data, anio, totalMes, totalGeneral);
+      document.getElementById('dataObject').value = JSON.stringify(data);
+      document.getElementById('anio').value = anio;
+      document.getElementById('totalMes').value = totalMes;
+      document.getElementById('totalGeneral').value = totalGeneral;
+    
+    });
+    
   });
 
+document.getElementById('btnPdf').addEventListener("click", () =>{
+  imprimirPdf();
 })
 
+const imprimirPdf =  async () =>{
+  
+  // --- Aquí empieza la generación del PDF ---
+  let data = JSON.parse(document.getElementById('dataObject').value);
+  let anio = document.getElementById('anio').value;
+  let pagoMes = document.getElementById('totalMes').value;
+  let totalMes = pagoMes.split(',');
+
+  let totalGeneral = document.getElementById('totalGeneral').value;
+
+  console.log(data);
+  console.log(totalMes[0]);
+  console.log(totalGeneral)
+
+  // Crear instancia de jsPDF
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+
+  // Definir columnas: Socio + 12 meses + Total
+  const columns = [
+    { header: 'Socio', dataKey: 'socio' },
+    { header: 'Ene', dataKey: '1' },
+    { header: 'Feb', dataKey: '2' },
+    { header: 'Mar', dataKey: '3' },
+    { header: 'Abr', dataKey: '4' },
+    { header: 'May', dataKey: '5' },
+    { header: 'Jun', dataKey: '6' },
+    { header: 'Jul', dataKey: '7' },
+    { header: 'Ago', dataKey: '8' },
+    { header: 'Sep', dataKey: '9' },
+    { header: 'Oct', dataKey: '10' },
+    { header: 'Nov', dataKey: '11' },
+    { header: 'Dic', dataKey: '12' },
+    { header: 'Total', dataKey: 'total_socio' },
+  ];
+
+  // Preparar datos para jsPDF autoTable
+  const rows = data.map(row => {
+    let obj = { socio: row.socio };
+    for (let i = 1; i <= 12; i++) {
+      obj[i] = Math.round(row[`mes${i}`]) || Math.round(Object.values(row)[i]) || 0;
+    }
+    obj.total_socio = Math.round(row.total_socio);
+    return obj;
+  });
+
+  // Agregar fila total mes al final
+  let totalRow = { socio: "Total Mes" };
+  for (let i = 0; i < 12; i++) {
+    totalRow[i + 1] = totalMes[i];
+  }
+  
+  totalRow.total_socio = totalGeneral;
+
+  // Agregar título
+  doc.setFontSize(14);
+  doc.text(`Reporte Anual por socio/mes del año ${anio}`, 14, 20);
+
+  // Crear tabla
+  doc.autoTable({
+    startY: 30,
+    columns: columns,
+    body: rows,
+    styles: { fontSize: 8 },
+    headStyles: { fillColor: [22, 160, 133] }, // verde azulado
+    footStyles: { fillColor: [231, 76, 60] },  // rojo para totales
+    foot: [totalRow],
+    columnStyles: {
+    socio: { halign: 'left' }, // primera columna texto
+    1: { halign: 'right' },
+    2: { halign: 'right' },
+    3: { halign: 'right' },
+    4: { halign: 'right' },
+    5: { halign: 'right' },
+    6: { halign: 'right' },
+    7: { halign: 'right' },
+    8: { halign: 'right' },
+    9: { halign: 'right' },
+    10: { halign: 'right' },
+    11: { halign: 'right' },
+    12: { halign: 'right' },
+    total_socio: { halign: 'right', fontStyle: 'bold'},
+  }
+  });
+
+  // Descargar PDF
+  doc.save(`reporte_pagos_${anio}.pdf`);
+
+};
 
 // Agregar socio
 document.getElementById("btnAgregarSocio").addEventListener("click", async () => {

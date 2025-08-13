@@ -9,6 +9,10 @@ body {
     
 }
 
+td{
+  vertical-align: middle;
+}
+
 h1, h2 {
   text-align: center;
 }
