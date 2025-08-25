@@ -117,7 +117,7 @@ app.post("/pagos", async (req, res) => {
     // res.json(result.rows[0]);
 
     await pool.query(
-      "INSERT INTO pagos (socio_id, monto, mes, anio) VALUES ?",
+      "INSERT INTO pagos (socio_id, monto, mes, anio) VALUES $1",
       [mesesNuevos]
     );
 
