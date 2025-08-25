@@ -116,12 +116,20 @@ app.post("/pagos", async (req, res) => {
     // );
     // res.json(result.rows[0]);
 
-    await pool.query(
-      "INSERT INTO pagos (socio_id, monto, mes, anio) VALUES $1",
-      [mesesNuevos]
-    );
+    const query = `
+      INSERT INTO pagos (socio_id, monto, mes, anio)
+      VALUES ${mesesNuevos
+        .map((_, i) => `($${i * 4 + 1}, $${i * 4 + 2}, $${i * 4 + 3}, $${i * 4 + 4})`)
+        .join(", ")}
+      ON CONFLICT (socio_id, mes, anio) DO NOTHING
+      RETURNING *;
+    `;
 
-     res.json({ message: "Pagos registrados correctamente", meses });
+    const flatValues = mesesNuevos.flat();
+
+    const result = await pool.query(query, flatValues);
+    
+    res.json({ message: "Pagos registrados correctamente", result: result.rows });
 
   } catch (err) {
     res.status(500).json({ error: err.message });
