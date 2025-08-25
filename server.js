@@ -105,7 +105,6 @@ app.post("/pagos", async (req, res) => {
       VALUES ${valores
         .map((_, i) => `($${i * 4 + 1}, $${i * 4 + 2}, $${i * 4 + 3}, $${i * 4 + 4})`)
         .join(", ")}
-      ON CONFLICT (socio_id, mes, anio) DO NOTHING
       RETURNING *;
     `;
 
