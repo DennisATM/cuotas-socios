@@ -86,18 +86,6 @@ app.post("/pagos", async (req, res) => {
       return res.status(400).json({ error: "Faltan datos" });
     }
 
-    // const values = meses.map(mes => [socio_id, monto, meses, anio]);
-
-    // Validar si ya existe un pago para ese mes/año
-    // const existe = await pool.query(
-    //   "SELECT 1 FROM pagos WHERE socio_id=$1 AND mes=$2 AND anio=$3",
-    //   [socio_id, mes, anio]
-    // );
-
-    // if (existe.rows.length > 0) {
-    //   return res.status(400).json({ error: "Ya existe un pago para este mes y año" });
-    // }
-
     const { rows: existentes } = await pool.query(
       "SELECT mes FROM pagos WHERE socio_id=$1 AND anio=$2 AND mes = ANY($3::int[])",
       [socio_id, anio, meses]
@@ -110,22 +98,18 @@ app.post("/pagos", async (req, res) => {
       return res.json({ message: "Todos los meses seleccionados ya estaban pagados" });
     }
 
-    // const result = await pool.query(
-    //   "INSERT INTO pagos(socio_id, monto, mes, anio) VALUES($1,$2,$3,$4) RETURNING *",
-    //   [socio_id, monto, meses, anio]
-    // );
-    // res.json(result.rows[0]);
+    const valores = mesesNuevos.map(mes => [socio_id, monto, mes, anio]);
 
     const query = `
       INSERT INTO pagos (socio_id, monto, mes, anio)
-      VALUES ${mesesNuevos
+      VALUES ${valores
         .map((_, i) => `($${i * 4 + 1}, $${i * 4 + 2}, $${i * 4 + 3}, $${i * 4 + 4})`)
         .join(", ")}
       ON CONFLICT (socio_id, mes, anio) DO NOTHING
       RETURNING *;
     `;
 
-    const flatValues = mesesNuevos.flat();
+    const flatValues = valores.flat();
 
     const result = await pool.query(query, flatValues);
     
