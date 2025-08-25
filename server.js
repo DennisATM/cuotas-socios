@@ -129,7 +129,7 @@ app.post("/pagos", async (req, res) => {
 
     const result = await pool.query(query, flatValues);
     
-    res.json({ message: "Pagos registrados correctamente", result: result.rows });
+    res.json(result.rows);
 
   } catch (err) {
     res.status(500).json({ error: err.message });
