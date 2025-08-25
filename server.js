@@ -79,23 +79,50 @@ app.delete("/socios/:id", async (req, res) => {
 // Registrar pago mensual
 app.post("/pagos", async (req, res) => {
   try {
-    const { socio_id, monto, mes, anio } = req.body;
 
-    // Validar si ya existe un pago para ese mes/año
-    const existe = await pool.query(
-      "SELECT 1 FROM pagos WHERE socio_id=$1 AND mes=$2 AND anio=$3",
-      [socio_id, mes, anio]
-    );
+    const { socio_id, monto, meses, anio } = req.body;
 
-    if (existe.rows.length > 0) {
-      return res.status(400).json({ error: "Ya existe un pago para este mes y año" });
+    if (!socio_id || !monto || !anio || !meses || meses.length === 0) {
+      return res.status(400).json({ error: "Faltan datos" });
     }
 
-    const result = await pool.query(
-      "INSERT INTO pagos(socio_id, monto, mes, anio) VALUES($1,$2,$3,$4) RETURNING *",
-      [socio_id, monto, mes, anio]
+    // const values = meses.map(mes => [socio_id, monto, meses, anio]);
+
+    // Validar si ya existe un pago para ese mes/año
+    // const existe = await pool.query(
+    //   "SELECT 1 FROM pagos WHERE socio_id=$1 AND mes=$2 AND anio=$3",
+    //   [socio_id, mes, anio]
+    // );
+
+    // if (existe.rows.length > 0) {
+    //   return res.status(400).json({ error: "Ya existe un pago para este mes y año" });
+    // }
+
+    const { rows: existentes } = await pool.query(
+      "SELECT mes FROM pagos WHERE socio_id=$1 AND anio=$2 AND mes = ANY($3::int[])",
+      [socio_id, anio, meses]
     );
-    res.json(result.rows[0]);
+
+    const mesesExistentes = existentes.map(r => r.mes);
+    const mesesNuevos = meses.filter(m => !mesesExistentes.includes(Number(m)));
+
+    if (mesesNuevos.length === 0) {
+      return res.json({ message: "Todos los meses seleccionados ya estaban pagados" });
+    }
+
+    // const result = await pool.query(
+    //   "INSERT INTO pagos(socio_id, monto, mes, anio) VALUES($1,$2,$3,$4) RETURNING *",
+    //   [socio_id, monto, meses, anio]
+    // );
+    // res.json(result.rows[0]);
+
+    await pool.query(
+      "INSERT INTO pagos (socio_id, monto, mes, anio) VALUES ?",
+      [mesesNuevos]
+    );
+
+     res.json({ message: "Pagos registrados correctamente", meses });
+
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

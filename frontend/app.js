@@ -119,21 +119,21 @@ const imprimirPdf =  async () =>{
     footStyles: { fillColor: [231, 76, 60] },  // rojo para totales
     foot: [totalRow],
     columnStyles: {
-    socio: { halign: 'left' }, // primera columna texto
-    1: { halign: 'right' },
-    2: { halign: 'right' },
-    3: { halign: 'right' },
-    4: { halign: 'right' },
-    5: { halign: 'right' },
-    6: { halign: 'right' },
-    7: { halign: 'right' },
-    8: { halign: 'right' },
-    9: { halign: 'right' },
-    10: { halign: 'right' },
-    11: { halign: 'right' },
-    12: { halign: 'right' },
-    total_socio: { halign: 'right', fontStyle: 'bold'},
-  }
+      socio: { halign: 'left' }, // primera columna texto
+      1: { halign: 'right' },
+      2: { halign: 'right' },
+      3: { halign: 'right' },
+      4: { halign: 'right' },
+      5: { halign: 'right' },
+      6: { halign: 'right' },
+      7: { halign: 'right' },
+      8: { halign: 'right' },
+      9: { halign: 'right' },
+      10: { halign: 'right' },
+      11: { halign: 'right' },
+      12: { halign: 'right' },
+      total_socio: { halign: 'right', fontStyle: 'bold'},
+    }
   });
 
   // Descargar PDF
@@ -161,10 +161,11 @@ document.getElementById("btnAgregarSocio").addEventListener("click", async () =>
 document.getElementById("btnPagoSocio").addEventListener("click", async () => {
   const socio_id = document.getElementById("idSocioPago").value;
   const monto = document.getElementById("montoPago").value;
-  const mes =  document.getElementById("mesPago").value;
+  const meses = Array.from(document.getElementById("mesesPago").selectedOptions).map(o => o.value);
+  // const mes =  document.getElementById("mesPago").value;
   const anio = document.getElementById("anioPago").value;
 
-  if (!mes || !anio || !monto) return alert("Seleccione monto válido, mes y año");
+  if (!meses || !anio || !monto) return alert("Seleccione monto válido, mes y año");
 
   if(Number(anio)<2020 || Number(anio)>2030) return alert("El año ingresado no es válido, debe ser un número entre 2020 y 2030");
 
@@ -173,7 +174,7 @@ document.getElementById("btnPagoSocio").addEventListener("click", async () => {
   await fetch(`${API_URL}/pagos`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ socio_id, monto, mes, anio })  
+    body: JSON.stringify({ socio_id, monto, meses, anio })  
   }).then(res => {
     if (!res.ok) {
       return res.json().then(err => alert(err.error));
@@ -183,7 +184,7 @@ document.getElementById("btnPagoSocio").addEventListener("click", async () => {
   });
 
   document.getElementById("montoPago").value = "";
-  document.getElementById("mesPago").value = "";
+  document.getElementById("mesesPago").value = "";
   document.getElementById("anioPago").value = "2025";
   cargarReporteTotal();
   cargarReporteSocios();
